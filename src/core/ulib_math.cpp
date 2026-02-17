@@ -581,6 +581,13 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_svar( QUERY, "complex", "j", TRUE, &g_i );
     QUERY->doc_var( QUERY, "The complex number sqrt(-1)." );
 
+    // spherical harmonics emc:2026
+    QUERY->add_sfun( QUERY, ck_sh, "float[]", "sh" );
+    QUERY->add_arg( QUERY, "int", "order" );
+    QUERY->add_arg( QUERY, "float", "azimuth" );
+    QUERY->add_arg( QUERY, "float", "zenith" );
+    QUERY->doc_func(QUERY, "Returns an array of size (N+1)^2, containing ACN ordered spherical harmonics.");
+
     // add examples
     // QUERY->add_ex( QUERY, "map.ck" );
     // QUERY->add_ex( QUERY, "math-help.ck" );
