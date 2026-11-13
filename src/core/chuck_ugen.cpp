@@ -939,11 +939,11 @@ t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 {
-    if( m_time >= now )
+    if( m_time >= now ) // if we are further in time than the provided time
         return m_valid;
 
     t_CKUINT i;
-    Chuck_UGen * ugen = NULL;
+    Chuck_UGen * ugen = NULL; // our port into the current ugen we're listening to
     SAMPLE multi;
 
     // part 1: tick upstream ugens
@@ -955,24 +955,24 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     // m_num_src would be zero, and m_src_list are handled in this
     // UGen's per-channel "sub-ugens" -- (ge + nshaheed, 1.5.0.0)
     // e.g., in=2 and out=2 (as in Identity2)
-    if( m_num_src )
+    if( m_num_src ) 
     {
         ugen = m_src_list[0];
-        if( ugen->m_time < now ) ugen->system_tick( now );
-        m_sum = ugen->m_current;
+        if( ugen->m_time < now ) ugen->system_tick( now ); // catch up
+        m_sum = ugen->m_current; // add ugen's current sample value to our sum
 
         // tick the src list
         for( i = 1; i < m_num_src; i++ )
         {
             ugen = m_src_list[i];
-            if( ugen->m_time < now ) ugen->system_tick( now );
-            if( ugen->m_valid )
+            if( ugen->m_time < now ) ugen->system_tick( now ); // catch up
+            if( ugen->m_valid ) // if it's valid
             {
                 if( m_op <= 1 )
-                    m_sum += ugen->m_current;
+                    m_sum += ugen->m_current; // add it
                 else // special ops
                 {
-                    switch( m_op )
+                    switch( m_op ) // the fun ways to merge audio
                     {
                     case 2: m_sum -= ugen->m_current; break;
                     case 3: m_sum *= ugen->m_current; break;
@@ -997,7 +997,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 ugen = m_multi_chan[i];
                 // tick sub-ugens for individual channels
                 if( ugen->m_time < now )
-                    ugen->system_tick( now );
+                    ugen->system_tick( now ); // catch up
                 // set to tickf input
                 // TODO: if op is not 1?
                 // 1.5.0.0 (nshaheed + ge) | why m_sum + ugen->m_sum?

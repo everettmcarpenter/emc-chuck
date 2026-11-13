@@ -240,7 +240,7 @@ Chuck_VM::~Chuck_VM()
 t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
                                t_CKUINT adc_chan, t_CKUINT adaptive, t_CKBOOL halt )
 {
-    if( m_init )
+    if( m_init ) // sanity check
     {
         m_last_error = "VM already initialized!";
         return FALSE;
@@ -250,13 +250,13 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
     EM_log( CK_LOG_SYSTEM, "initializing virtual machine..." );
     EM_pushlog(); // push stack
 
-    m_halt = halt;
-    m_num_adc_channels = adc_chan;
-    m_num_dac_channels = dac_chan;
-    m_srate = srate;
+    m_halt = halt; 
+    m_num_adc_channels = adc_chan; // set in
+    m_num_dac_channels = dac_chan; // set out
+    m_srate = srate; // srate
 
     // lockdown
-    Chuck_VM_Object::lock_all();
+    Chuck_VM_Object::lock_all(); // lock up
 
     // log
     EM_log( CK_LOG_SYSTEM, "allocating shreduler..." );
@@ -2922,7 +2922,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     SAMPLE * output = vm_ref->output_ref() + N;
     t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
     #else
-    const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
+    const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels); // get our pointers to input and output buffers
     SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);
     #endif
 
@@ -2930,7 +2930,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     for( i = 0; i < m_num_adc_channels; i++ )
     {
         // ge: switched order of lines 1.3.5.3
-        m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
+        m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current; // simple memory shift
         #ifdef __CHUCK_USE_PLANAR_BUFFERS__
         // current frame = N
         // current channel = i
@@ -2938,13 +2938,13 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
         // the +N is taken care of by initialization
         m_adc->m_multi_chan[i]->m_current = input[buffer_length * i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
         #else
-        m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain; // get the input and adjust depending on adc's gain
         #endif
-        m_adc->m_multi_chan[i]->m_time = this->now_system;
+        m_adc->m_multi_chan[i]->m_time = this->now_system; // document the time that this m_multi_chan[i]->m_current was reported
         sum += m_adc->m_multi_chan[i]->m_current;
     }
-    m_adc->m_last = m_adc->m_current = sum / m_num_adc_channels;
-    m_adc->m_time = this->now_system;
+    m_adc->m_last = m_adc->m_current = sum / m_num_adc_channels; // m_last is the summation of the multiple channels and scaled by the number of channels
+    m_adc->m_time = this->now_system; // report the time that m_last was reported
 
     // PROCESSING
     m_dac->system_tick( this->now_system );
@@ -2958,6 +2958,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
         // the +N is taken care of by initialization
         output[buffer_length * i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
         #else
+        // output audioto given buffer
         output[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
         #endif
     }
