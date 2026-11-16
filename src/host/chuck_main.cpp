@@ -80,11 +80,11 @@ extern "C" void signal_pipe( int sig_num );
 // global variables
 //-----------------------------------------------------------------------------
 // the one ChucK, for command line host
-ChucK * the_chuck;
+ChucK * the_chuck; // where we keep the chuck
 // thread id for shell
 CHUCK_THREAD g_tid_shell = 0;
 // default destination host name
-char g_otf_dest[256] = "127.0.0.1";
+char g_otf_dest[256] = "127.0.0.1"; // does this have to be 256?
 // otf listener port
 t_CKINT g_otf_port = 8888;
 
